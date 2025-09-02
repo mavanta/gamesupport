@@ -1,0 +1,8 @@
+local Games = {
+  [79546208627805] = "", -- 99 Nights in the Forest
+  [126509999114328] = "", -- 99 Nights in the Forest in game
+  [103754275310547] = "", -- Hunty Zombie
+  [86076978383613] = "", -- Hunty Zombie in game
+}
+
+return Games
