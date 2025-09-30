@@ -1,1 +1,602 @@
+local rs = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local gui = Instance.new("ScreenGui")
+gui.Name = "BatCanHubV3"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+
+local miniLabel = Instance.new("ImageButton")
+miniLabel.Size = UDim2.new(0, 50, 0, 50)
+miniLabel.Position = UDim2.new(0, 100, 0.2, 0)
+miniLabel.Visible = false
+miniLabel.Active = true
+miniLabel.Parent = gui
+miniLabel.ZIndex = 100
+miniLabel.Active = true
+miniLabel.AutoButtonColor = true
+miniLabel.Draggable = true
+miniLabel.Image = "rbxassetid://113885072227876"
+
+local miniUICorner = Instance.new("UICorner")
+miniUICorner.CornerRadius = UDim.new(1, 0)
+miniUICorner.Parent = miniLabel
+
+-- Hub chính
+local hubFrame = Instance.new("Frame")
+hubFrame.Size = UDim2.new(0, 260, 0, 400)
+hubFrame.Position = UDim2.new(0.5, -130, 0.5, -200)
+hubFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+hubFrame.Active = true
+hubFrame.Visible = true
+hubFrame.Parent = gui
+hubFrame.ZIndex = 10
+hubFrame.Active = true
+hubFrame.Draggable = true
+
+-- Tiêu đề
+local title = Instance.new("TextLabel")
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, -40, 0, 36)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+title.Text = "Break In Simulator"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 20
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.Parent = hubFrame
+title.ZIndex = 12
+local gradient = Instance.new("UIGradient", title)
+gradient.Rotation = 45
+local function rainbowGradient(uiGradient)
+	task.spawn(function()
+		local hue = 0
+		while task.wait(0.02) do
+			local colors = {}
+			for i = 0, 1, 0.2 do
+				local h = (hue + i) % 1
+				table.insert(colors, ColorSequenceKeypoint.new(i, Color3.fromHSV(h, 1, 1)))
+			end
+			uiGradient.Color = ColorSequence.new(colors)
+			hue = (hue + 0.005) % 1
+		end
+	end)
+end
+
+rainbowGradient(gradient)
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = title
+
+-- Nút X (đóng hub)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 36, 0, 36)
+closeBtn.Position = UDim2.new(1, -36, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 20
+closeBtn.Parent = hubFrame
+closeBtn.ZIndex = 20
+local uistr = Instance.new("UIStroke")
+uistr.Parent = closeBtn
+uistr.Color = Color3.fromRGB(0, 0, 0)
+uistr.Thickness = 0.1
+
+-- ScrollingFrame chứa các nút
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -20, 1, -56)
+scrollFrame.Position = UDim2.new(0, 10, 0, 46)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.Parent = hubFrame
+scrollFrame.ZIndex = 11
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scrollFrame
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 8)
+listLayout.FillDirection = Enum.FillDirection.Vertical
+
+-- Tự động cập nhật CanvasSize khi có thêm nút
+listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 70)
+end)
+
+-- Hàm tạo nút với toggle gạt tròn
+local function createButtonWithToggle(text, callback)
+	local btnFrame = Instance.new("Frame")
+	btnFrame.Size = UDim2.new(1, 0, 0, 44)
+	btnFrame.BackgroundTransparency = 1
+	btnFrame.Parent = scrollFrame
+	btnFrame.ZIndex = 12
+
+	local btn = Instance.new("TextButton")
+	btn.Name = "MainBtn"
+	btn.Size = UDim2.new(0.7, -10, 1, 0)
+	btn.Position = UDim2.new(0, 0, 0, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btn.Text = text
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 16
+	btn.TextXAlignment = Enum.TextXAlignment.Left
+	btn.Parent = btnFrame
+	btn.AutoButtonColor = true
+	btn.ZIndex = 13
+
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 8)
+	btnCorner.Parent = btn
+
+	-- Toggle switch
+	local toggleFrame = Instance.new("Frame")
+	toggleFrame.Size = UDim2.new(0, 48, 0, 24)
+	toggleFrame.Position = UDim2.new(1, -58, 0.5, -12)
+	toggleFrame.AnchorPoint = Vector2.new(0, 0)
+	toggleFrame.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+	toggleFrame.Parent = btnFrame
+	toggleFrame.ZIndex = 14
+
+	local toggleCorner = Instance.new("UICorner")
+	toggleCorner.CornerRadius = UDim.new(1, 0)
+	toggleCorner.Parent = toggleFrame
+
+	local knob = Instance.new("Frame")
+	knob.Size = UDim2.new(0, 20, 0, 20)
+	knob.Position = UDim2.new(0, 2, 0.5, -10)
+	knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	knob.Parent = toggleFrame
+	knob.ZIndex = 15
+
+	local knobCorner = Instance.new("UICorner")
+	knobCorner.CornerRadius = UDim.new(1, 0)
+	knobCorner.Parent = knob
+
+	local state = false
+	local function setToggle(val)
+		state = val
+		if state then
+			toggleFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+			knob:TweenPosition(UDim2.new(1, -22, 0.5, -10), "Out", "Sine", 0.18, true)
+		else
+			toggleFrame.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+			knob:TweenPosition(UDim2.new(0, 2, 0.5, -10), "Out", "Sine", 0.18, true)
+		end
+	end
+
+	setToggle(false)
+
+	toggleFrame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			setToggle(not state)
+			if callback then callback(state) end
+		end
+	end)
+	knob.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			setToggle(not state)
+			if callback then callback(state) end
+		end
+	end)
+	btn.MouseButton1Click:Connect(function()
+		setToggle(not state)
+		if callback then callback(state) end
+	end)
+
+	return btnFrame
+end
+
+-- Hàm tạo nút chỉ có chức năng bấm (không toggle)
+local function createButtonSingle(text, callback)
+	local btnFrame = Instance.new("Frame")
+	btnFrame.Size = UDim2.new(1, 0, 0, 44)
+	btnFrame.BackgroundTransparency = 1
+	btnFrame.Parent = scrollFrame
+	btnFrame.ZIndex = 12
+
+	local btn = Instance.new("TextButton")
+	btn.Name = "SingleBtn"
+	btn.Size = UDim2.new(1, 0, 1, 0)
+	btn.Position = UDim2.new(0, 0, 0, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btn.Text = text
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 16
+	btn.TextXAlignment = Enum.TextXAlignment.Center
+	btn.Parent = btnFrame
+	btn.AutoButtonColor = true
+	btn.ZIndex = 13
+
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 8)
+	btnCorner.Parent = btn
+
+	btn.MouseButton1Click:Connect(function()
+		if callback then callback(btn) end
+	end)
+
+	return btnFrame
+end
+
+-- hàm tạo textbox -- 
+local function createTextbox(text, placetext, callback)
+	local btnFrame = Instance.new("Frame")
+	btnFrame.Size = UDim2.new(1, 0, 0, 44)
+	btnFrame.BackgroundTransparency = 1
+	btnFrame.Parent = scrollFrame
+	btnFrame.ZIndex = 12
+
+	local btn = Instance.new("TextButton")
+	btn.Name = "SingleBtn"
+	btn.Size = UDim2.new(0.45, 0, 1, 0)
+	btn.Position = UDim2.new(0.5, 0, 0, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btn.Text = text
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 16
+	btn.TextXAlignment = Enum.TextXAlignment.Center
+	btn.Parent = btnFrame
+	btn.AutoButtonColor = true
+	btn.ZIndex = 13
+
+	local TextBox = Instance.new("TextBox")
+	TextBox.Size = UDim2.new(0.5, -20, 1, 0)
+	TextBox.Position = UDim2.new(0, 10, 0, 0)
+	TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	TextBox.Font = Enum.Font.Cartoon
+	TextBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+	TextBox.TextScaled = true
+	TextBox.Parent = btnFrame
+	TextBox.ZIndex = 14
+	TextBox.PlaceholderText = placetext
+	TextBox.Text = ""
+
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 8)
+	btnCorner.Parent = btn
+	local btnCorner2 = Instance.new("UICorner")
+	btnCorner2.CornerRadius = UDim.new(0, 8)
+	btnCorner2.Parent = TextBox
+
+	btn.MouseButton1Click:Connect(function()
+		if callback then
+			callback(TextBox.Text)
+		end
+	end)
+
+	return btnFrame, TextBox
+end
+
+
+-- info
+local ytb = Instance.new("TextLabel", scrollFrame)
+ytb.Size = UDim2.new(1, 0, 0, 25)
+ytb.Position = UDim2.new(0, 0, 0, 0)
+ytb.Text = "Youtube : @batcanboard"
+ytb.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ytb.Font = Enum.Font.Cartoon
+ytb.TextSize = 20
+ytb.ZIndex = 15
+local ybcrner = Instance.new("UICorner")
+ybcrner.CornerRadius = UDim.new(0, 8)
+ybcrner.Parent = ytb
+local hue = 0
+rs.RenderStepped:Connect(function()
+	hue = (hue + 1) % 360
+	ytb.TextColor3 = Color3.fromHSV(hue/360, 1, 1)
+end)
+
+
+local discordBtn
+discordBtn = createButtonSingle("Join Discord (for game poll)", function()
+	discordBtn:FindFirstChild("SingleBtn").Text = "Copied !"
+	setclipboard("https://discord.gg/592AGgZHm7")
+	wait(1.5)
+	discordBtn:FindFirstChild("SingleBtn").Text = "Join Discord (for game poll)"
+end)
+
+-- khai báo -- 
+local savedPart = nil
+local connection
+local infJumpEnabled = false
+local infJumpConnection
+local stealDMcol = false
+local sellAllcol = false
+
+-- [[ skill function ]]
+
+-- steal diamond --
+local function stealdiamond(btn)
+	if stealDMcol then return end
+	stealDMcol = true
+
+	local plr = game.Players.LocalPlayer
+	local char = plr.Character or plr.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+	local humanoid = char:WaitForChild("Humanoid")
+	local kc = workspace.Stealable_Objects:FindFirstChild("Diamond")
+
+	if not kc then
+		btn.Text = "Diamond not found (đợi/wait)"
+		task.wait(2)
+		btn.Text = "Steal Diamond (chỉ robber)"
+		stealDMcol = false
+		return
+	end
+
+	local proDora = kc:FindFirstChild("Steal_Proximity")
+	proDora.HoldDuration = 0
+	local crowbar = plr.Backpack:FindFirstChild("Crowbar")
+	if not crowbar then
+		btn.Text = "Crowbar not found (mua/buy)"
+		stealDMcol = false
+		task.wait(2)
+		btn.Text = "Steal Diamond"
+		return
+	end
+
+	local truck = workspace.Truck:FindFirstChild("TruckObj")
+	if not truck then
+		btn.Text = "Truck not found (đợi/wait)"
+		task.wait(2)
+		btn.Text = "Steal Diamond (chỉ robber)"
+		stealDMcol = false
+		return
+	end
+
+	local offset = CFrame.new(-2, -1, 0)
+	local newCFrame = kc.CFrame * offset
+	newCFrame = CFrame.new(newCFrame.Position, kc.Position)
+
+	humanoid:EquipTool(crowbar)
+	hrp.CFrame = newCFrame
+	task.wait(1)
+	crowbar:Activate()
+	wait(0.4)
+	crowbar:Activate()
+	task.wait(1)
+	hrp.CFrame = kc.CFrame
+
+	proDora:InputHoldBegin()
+	proDora:InputHoldEnd()
+	proDora:InputHoldBegin()
+	proDora:InputHoldEnd()
+	proDora:InputHoldBegin()
+	proDora:InputHoldEnd()
+	proDora:InputHoldBegin()
+	proDora:InputHoldEnd()
+	proDora:InputHoldBegin()
+	proDora:InputHoldEnd()
+	proDora:InputHoldBegin()
+	proDora:InputHoldEnd()
+
+	task.wait(0.6)
+	hrp.CFrame = truck.PrimaryPart.CFrame
+
+	task.wait(2)
+	btn.Text = "Steal Diamond"
+	stealDMcol = false
+end
+
+local function instantSteal()
+	local function fixPrompt(prompt)
+		if prompt:IsA("ProximityPrompt") then
+			prompt.HoldDuration = 0
+		end
+	end
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		fixPrompt(obj)
+	end
+	workspace.DescendantAdded:Connect(fixPrompt)
+end
+
+local function sellall(btn)
+	if stealDMcol then return end
+	sellAllcol = true
+
+	local plr = game.Players.LocalPlayer
+	local char = plr.Character or plr.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+	local defaultPositon = hrp.CFrame
+
+	local truck = workspace.Truck:FindFirstChild("TruckObj")
+	if not truck then
+		btn.Text = "Truck not found (đợi/wait)"
+		task.wait(2)
+		btn.Text = "Sell All (chỉ robber)"
+		sellAllcol = false
+	else
+		hrp.CFrame = truck.PrimaryPart.CFrame
+		task.wait(1.3)
+		hrp.CFrame = defaultPositon
+		sellAllcol = false
+		return
+	end
+end
+-- [[ SKILL ]]
+
+-- instant steal --
+createButtonSingle("Instant Steal (chỉ robber)", instantSteal)
+
+-- steal diamond --
+createButtonSingle("Steal Diamond (chỉ robber)", stealdiamond)
+
+-- sell all --
+createButtonSingle("Sell All (chỉ robber)", sellall)
+
+-- noclip --
+createButtonWithToggle("NoClip", function(on)
+	if on then
+		-- Bật noclip
+		connection = game:GetService("RunService").Stepped:Connect(function()
+			if player.Character then
+				for _, part in pairs(player.Character:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+			end
+		end)
+	else
+		-- Tắt noclip
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+		if player.Character then
+			for _, part in pairs(player.Character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = true
+				end
+			end
+		end
+	end
+end)
+
+-- autokill --
+createTextbox("Auto Kill", "name player", function(input)
+	local plr = game.Players.LocalPlayer
+	local char = plr.Character or plr.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+	local hm = char:WaitForChild("Humanoid")
+	local defaultpos = hrp.CFrame
+
+	local tool = plr.Backpack:FindFirstChild("Crowbar") or plr.Backpack:FindFirstChild("Baseball Bat")
+	if not tool then return end
+	hm:EquipTool(tool)
+
+	for _, p in ipairs(game.Players:GetPlayers()) do
+		if string.lower(p.Name):sub(1, #input) == string.lower(input) 
+			or string.lower(p.DisplayName):sub(1, #input) == string.lower(input) then
+			if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+				local targetHRP = p.Character.HumanoidRootPart
+				local targetHum = p.Character:FindFirstChildOfClass("Humanoid")
+
+				task.spawn(function()
+					while task.wait() do
+						-- nếu máu target = 0 thì dừng lại
+						if targetHum.Health <= 0 then
+							hrp.CFrame = defaultpos
+							break
+						end
+
+						hrp.CFrame = targetHRP.CFrame
+						tool:Activate()
+					end
+				end)
+			end
+			break
+		end
+	end
+end)
+
+-- inf jump --
+createButtonWithToggle("Infinity Jump", function(on)
+	if on then
+		infJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+			local char = player.Character
+			if char and char:FindFirstChild("Humanoid") then
+				char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
+		end)
+	else
+		if infJumpConnection then
+			infJumpConnection:Disconnect()
+			infJumpConnection = nil
+		end
+	end
+end)
+
+-- humanoid --
+local hm = char:WaitForChild("Humanoid") -- hu mèn oi --
+-- speed --
+local defautspeed = hm.WalkSpeed
+player.CharacterAdded:Connect(function(char)
+	hm = char:WaitForChild("Humanoid")
+end)
+createTextbox("Apply", "set speed", function(input)
+	local value = tonumber(input)
+	if not value then return end
+	hm.WalkSpeed = value
+end)
+
+-- jump --
+player.CharacterAdded:Connect(function(char)
+	hm = char:WaitForChild("Humanoid")
+end)
+createTextbox("Apply", "set jumpPower", function(input)
+	local value = tonumber(input)
+	if not value then return end
+	hm.UseJumpPower = true
+	hm.JumpPower = value
+end)
+
+-- tp --
+createTextbox("Teleport", "name player you want to tp...", function(input)
+	local plr = game.Players.LocalPlayer
+	local char = plr.Character or plr.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	for _, p in ipairs(game.Players:GetPlayers()) do
+		if string.lower(p.Name):sub(1, #input) == string.lower(input) 
+			or string.lower(p.DisplayName):sub(1, #input) == string.lower(input) then
+			if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+				hrp.CFrame = p.Character.HumanoidRootPart.CFrame + Vector3.new(0,2,0)
+			end
+			break
+		end
+	end
+end)
+
+-- fixlag -- 
+createButtonSingle("Fix Lag (plastic material)", function()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			obj.Material = Enum.Material.Plastic
+		end
+	end
+end)
+
+-- ultra fixlag --
+createButtonSingle("Ultra Fix Lag (accessory delete)", function()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			obj.Material = Enum.Material.Plastic
+			obj.CastShadow = false
+		elseif obj:IsA("Decal") or obj:IsA("Texture") then
+			obj:Destroy()
+		elseif obj:IsA("Accessory") then
+			obj:Destroy()
+		end
+	end
+end)
+
+-- Đóng hub chính, hiện mini hub
+closeBtn.MouseButton1Click:Connect(function()
+	hubFrame.Visible = false
+	miniLabel.Visible = true
+end)
+
+-- Ấn mini hub để mở lại hub chính
+miniLabel.MouseButton1Click:Connect(function()
+	hubFrame.Visible = true
+	miniLabel.Visible = false
+end)
+
+hubFrame.ZIndex = 10000
+scrollFrame.ZIndex = 11000
+title.ZIndex = 12000
+closeBtn.ZIndex = 20000
+miniLabel.ZIndex = 99999999
