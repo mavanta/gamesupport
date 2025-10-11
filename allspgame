@@ -1,7 +1,7 @@
 local Games = {
   [79546208627805] = "", -- 99 Nights in the Forest
   [126509999114328] = "", -- 99 Nights in the Forest in game
-  [103754275310547] = "", -- Hunty Zombie
+  [103754275310547] = "https://raw.githubusercontent.com/mavanta/gamesupport/refs/heads/main/joingamefirst", -- Hunty Zombie
   [86076978383613] = "https://raw.githubusercontent.com/mavanta/gamesupport/refs/heads/main/huntyzombie", -- Hunty Zombie in game
   [15064853712] = "https://raw.githubusercontent.com/mavanta/gamesupport/refs/heads/main/brsimu", -- Break in simu
 }
