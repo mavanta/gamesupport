@@ -3,7 +3,7 @@ local Games = {
   [1268927906] = "", -- Muscle Legends
   [10449761463] = "https://raw.githubusercontent.com/mavanta/allgame/refs/heads/main/tsb", -- The Strongest Battlegrounds
   [109073199927285] = "", -- Escape the Tsunami
-  [15064853712] = "", -- break in simulaotr
+  [15064853712] = "https://raw.githubusercontent.com/mavanta/allgame/refs/heads/main/break%20in%20simulator", -- break in simulaotr
 }
 
 return Games
