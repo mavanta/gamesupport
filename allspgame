@@ -1,0 +1,9 @@
+local Games = {
+  [994732206] = "", -- Blox Fruit
+  [1268927906] = "", -- Muscle Legends
+  [10449761463] = "", -- The Strongest Battlegrounds
+  [109073199927285] = "", -- Escape the Tsunami
+  [15064853712] = "", -- break in simulaotr
+}
+
+return Games
